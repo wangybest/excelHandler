@@ -5,6 +5,9 @@ import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import com.zjut.excel.vo.MaterialModel;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -12,8 +15,10 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,12 +35,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @RestController
 @RequestMapping("/rest/excel")
+@Api("转换excel")
 public class ExcelHandler {
 
     private static Integer rowNumber = 3;
 
+    private static String supplier = "上海匡辉实业有限公司";
+
+    @ApiOperation(value = "设置每行单位个数")
+    @PostMapping("/rowNumber")
+    public void setRow(int number) {
+        rowNumber = number;
+    }
+
     @PostMapping("/upload")
-    public void handleExcel(MultipartFile file,String supplier,String projectName, HttpServletResponse httpServletResponse) throws Exception {
+    @ApiOperation(value = "转换excel")
+    public void handleExcel(MultipartFile file,@ApiParam(value = "项目名称") String projectName, HttpServletResponse httpServletResponse) throws Exception {
         AtomicInteger i = new AtomicInteger(1);
         List<MaterialModel> materialModels = ExcelImportUtil.importExcel(file.getInputStream(), MaterialModel.class, new ImportParams());
         materialModels.forEach(item->{
