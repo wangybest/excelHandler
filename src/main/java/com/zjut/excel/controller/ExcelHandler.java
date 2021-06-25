@@ -8,6 +8,7 @@ import com.zjut.excel.vo.MaterialModel;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -36,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RestController
 @RequestMapping("/rest/excel")
 @Api("转换excel")
+@Slf4j
 public class ExcelHandler {
 
     private static Integer rowNumber = 3;
@@ -52,8 +55,15 @@ public class ExcelHandler {
     @ApiOperation(value = "转换excel")
     public void handleExcel(MultipartFile file,@ApiParam(value = "项目名称") String projectName, HttpServletResponse httpServletResponse) throws Exception {
         AtomicInteger i = new AtomicInteger(1);
-        List<MaterialModel> materialModels = ExcelImportUtil.importExcel(file.getInputStream(), MaterialModel.class, new ImportParams());
+        List<MaterialModel> materialModels = new ArrayList<>();
+        try {
+             materialModels = ExcelImportUtil.importExcel(file.getInputStream(), MaterialModel.class, new ImportParams());
+        } catch (Exception e) {
+            log.info("excel解析错误",e);
+            throw e;
+        }
         materialModels.forEach(item->{
+            log.info("导入数据:{}", item);
             item.setSupplier(supplier);
             item.setProjectName(projectName);
             item.setSerialNumber(String.valueOf(i.getAndIncrement()));
